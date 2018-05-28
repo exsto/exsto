@@ -1,7 +1,14 @@
 (ns exsto.subs
-  (:require [re-frame.core :as re-frame]))
+  (:require [re-frame.core :as rf]))
 
-(re-frame/reg-sub
+(rf/reg-sub
  ::name
- (fn [db]
-   (:name db)))
+ (fn [db] (:name db)))
+
+(rf/reg-sub
+ ::count
+ (fn [db] (count (:items db))))
+
+(rf/reg-sub
+ ::items
+ (fn [db] (:items db)))
