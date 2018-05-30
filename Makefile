@@ -22,3 +22,6 @@ run:
 
 build:
 	@make lein cmd='cljsbuild once min'
+
+.PHONY: lein \
+		clean build run
