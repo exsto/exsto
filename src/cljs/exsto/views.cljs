@@ -60,11 +60,6 @@
   (get form-components
        (:type form)))
 
-;; (defn get-input [id]
-;;   (let [inputs (rf/subscribe [::subs/form-inputs])]
-;;     (first
-;;      (filter #(= id (% :id)) inputs))))
-
 (defn toolbox []
   (let [input-val (r/atom "input value")
         cb        (r/atom true)]
