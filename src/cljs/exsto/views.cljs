@@ -1,25 +1,17 @@
 (ns exsto.views
   (:require [re-frame.core :as rf]
             [reagent.core :as r]
-            [re-com.core :as rc]
             [exsto.subs :as subs]))
-
-(defn title []
-  (let [name @(rf/subscribe [::subs/name])]
-    [rc/title
-     :label (str name " - web form constructor")
-     :level :level2]))
 
 (defn counter []
   (let [count @(rf/subscribe [::subs/count])]
-    [rc/p [:strong "number of forms: "] count]))
+    [:p [:strong "number of forms: "] count]))
 
 (defn button []
-  [rc/button
-   :label "Add dummy item"
-   :on-click #(rf/dispatch [:button-click])])
-
-(defn header [] [title])
+  [:button.btn.btn-primary
+   {:type "button"
+    :on-click #(rf/dispatch [:button-click])}
+   "Add dummy item"])
 
 (defn allow-drop [e]
   (.preventDefault e))
@@ -33,7 +25,7 @@
 (defn handle-drop [e]
   (.preventDefault e)
   (let [data (keyword (-> e .-dataTransfer (.getData "text")))]
-    (.log js/console (str "drop data " data ))
+    (.log js/console (str "drop data " data))
     (rf/dispatch [:add-item data])))
 
 (def draggable
@@ -45,12 +37,12 @@
    :on-drag-over  allow-drop})
 
 (defn drag-checkbox [atom]
-  [rc/checkbox
-   :model @atom
-   :on-change #(reset! atom %)])
+  [:input {:type "checkbox"
+           :value @atom
+           :on-change #(reset! atom %)}])
 
 (defn drag-button []
-  [rc/button :label "button"])
+  [:button.btn.btn-primary {:type "button"} "button"])
 
 (defn drag-input [atom]
   [:input
@@ -59,12 +51,21 @@
     :auto-focus true
     :on-change #(reset! atom (-> % .-target .-value))}])
 
-(def forms-col
+(def form-components
   {:drag-checkbox [drag-checkbox (r/atom true)]
    :drag-button   [drag-button]
    :drag-input    [drag-input    (r/atom "input value")]})
 
-(defn nav []
+(defn resolve-form [form]
+  (get form-components
+       (:type form)))
+
+;; (defn get-input [id]
+;;   (let [inputs (rf/subscribe [::subs/form-inputs])]
+;;     (first
+;;      (filter #(= id (% :id)) inputs))))
+
+(defn toolbox []
   (let [input-val (r/atom "input value")
         cb        (r/atom true)]
     (fn []
@@ -80,25 +81,32 @@
         [drag-checkbox cb]]])))
 
 (defn dropzone [e]
-  (let [items (rf/subscribe [::subs/items])]
+  (let [inputs (rf/subscribe [::subs/form-inputs])]
     (fn []
-      (.log js/console (str @items))
-      [:div.dropzone
-       dropable
-       [:ul
-        (for [form @items]
-          ^{:key (:id form)} [:li (forms-col form)])]])))
+      (.log js/console (str @inputs))
+      [:div.dropzone dropable
+       [:ul (for [form @inputs]
+              ^{:key (str "item-" (:id form))}
+              [:li (resolve-form form)])]])))
 
-(defn content []
+(defn constructor []
   [:div
    [dropzone]
    [counter]
    [button]])
 
+(defn content []
+  [:div.row
+   [:div.col-xs-6.col-md-4 [toolbox]]
+   [:div.col-xs-6.col-md-4 [constructor]]])
+
+(defn navbar []
+  [:nav.navbar.navbar-default
+   [:div.navbar-header
+    [:span.navbar-brand
+     "Exsto - web form constructor"]]])
+
 (defn main-panel []
-  [rc/v-box
-   :children [[rc/box :child [header]]
-              [rc/h-box
-               :height "80vh"
-               :children [[rc/box :size "20vw" :child [nav]]
-                          [rc/box :size "1"    :child [content]]]]]])
+  [:div.container
+   [navbar]
+   [content]])

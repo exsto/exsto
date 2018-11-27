@@ -1,5 +1,3 @@
 (ns exsto.db)
 
-(def default-db
-  {:name "Exsto"
-   :items []})
+(def default-db {:form-inputs []})
